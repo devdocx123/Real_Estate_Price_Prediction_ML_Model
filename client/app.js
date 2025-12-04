@@ -1,58 +1,49 @@
 function getBathValue() {
   var uiBathrooms = document.getElementsByName("uiBathrooms");
-  for(var i in uiBathrooms) {
-    if(uiBathrooms[i].checked) {
-        return parseInt(i)+1;
-    }
+  for(var i=0; i<uiBathrooms.length; i++) {
+    if(uiBathrooms[i].checked) return parseInt(uiBathrooms[i].value);
   }
-  return -1; // Invalid Value
+  return -1;
 }
 
 function getBHKValue() {
   var uiBHK = document.getElementsByName("uiBHK");
-  for(var i in uiBHK) {
-    if(uiBHK[i].checked) {
-        return parseInt(i)+1;
-    }
+  for(var i=0; i<uiBHK.length; i++) {
+    if(uiBHK[i].checked) return parseInt(uiBHK[i].value);
   }
-  return -1; // Invalid Value
+  return -1;
 }
 
 function onClickedEstimatePrice() {
   console.log("Estimate price button clicked");
-  var sqft = document.getElementById("uiSqft");
+  var sqft = document.getElementById("uiSqft").value;
   var bhk = getBHKValue();
   var bathrooms = getBathValue();
-  var location = document.getElementById("uiLocations");
+  var location = document.getElementById("uiLocations").value;
   var estPrice = document.getElementById("uiEstimatedPrice");
 
-  // Updated URL to match Flask backend routes
-  var url = '/predict_home_price'; 
-
-  $.post(url, {
-      total_sqft: parseFloat(sqft.value),
+  $.post('/predict_home_price', {
+      total_sqft: parseFloat(sqft),
       bhk: bhk,
       bath: bathrooms,
-      location: location.value
-  },function(data, status) {
+      location: location
+  }, function(data, status) {
       console.log(data.estimated_price);
       estPrice.innerHTML = "<h2>" + data.estimated_price.toString() + " Lakh</h2>";
-      console.log(status);
   });
 }
 
 function onPageLoad() {
-  console.log( "document loaded" );
-  // Updated URL to match Flask backend routes
-  var url = "/get_location_names";
-  $.get(url,function(data, status) {
-      console.log("got response for get_location_names request");
+  console.log("Document loaded");
+  $.get("/get_location_names", function(data, status) {
+      console.log("got response for get_location_names request", data);
       if(data) {
           var locations = data.locations;
           var uiLocations = document.getElementById("uiLocations");
           $('#uiLocations').empty();
-          for(var i in locations) {
-              var opt = new Option(locations[i]);
+          $('#uiLocations').append('<option value="" disabled selected>Choose a Location</option>');
+          for(var i=0; i<locations.length; i++) {
+              var opt = new Option(locations[i], locations[i]);
               $('#uiLocations').append(opt);
           }
       }
