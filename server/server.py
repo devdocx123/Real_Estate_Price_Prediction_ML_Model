@@ -8,11 +8,10 @@ app = Flask(__name__)
 @app.route('/get_location_names')
 def get_location_names():
     locations = util.get_location_names()
-    print("Returning locations:", locations)   # helpful debug
+    print("Returning locations:", locations)   # debug
     response = jsonify({'locations': locations})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
-
 
 @app.route('/predict_home_price', methods=['POST'])
 def predict_home_price():
@@ -22,23 +21,27 @@ def predict_home_price():
     bath = int(request.form['bath'])
 
     estimated_price = util.get_estimated_price(location, total_sqft, bath, bhk)
-
     response = jsonify({'estimated_price': estimated_price})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-
 # ---------------- Serve Frontend ----------------
-# Ensure correct absolute path to /client folder
+# Absolute path to /client folder
 CLIENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'client'))
 
 @app.route('/')
 def index():
     return send_from_directory(CLIENT_DIR, 'index.html')
 
-@app.route('/<path:path>')
+@app.route('/static/<path:path>')
 def serve_static(path):
+    """Serve JS/CSS/images under /static/ folder"""
     return send_from_directory(CLIENT_DIR, path)
+
+# Optional: handle unknown routes (SPA support)
+@app.errorhandler(404)
+def not_found(e):
+    return "Not Found", 404
 
 # ---------------- Main ----------------
 if __name__ == '__main__':
