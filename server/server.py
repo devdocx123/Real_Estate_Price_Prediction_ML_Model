@@ -27,7 +27,8 @@ def predict_home_price():
     return response
 
 # ---------------- Serve Frontend ----------------
-CLIENT_DIR = os.path.join(os.path.dirname(__file__), '../client')
+# Make sure 'client' folder is in the same directory as server.py
+CLIENT_DIR = os.path.join(os.path.dirname(__file__), 'client')
 
 @app.route('/')
 def index():
@@ -35,7 +36,13 @@ def index():
 
 @app.route('/<path:path>')
 def serve_static(path):
+    # Serve JS, CSS, images
     return send_from_directory(CLIENT_DIR, path)
+
+# Optional: fallback for SPA routes
+@app.errorhandler(404)
+def not_found(e):
+    return send_from_directory(CLIENT_DIR, 'index.html')
 
 # ---------------- Main ----------------
 if __name__ == '__main__':
