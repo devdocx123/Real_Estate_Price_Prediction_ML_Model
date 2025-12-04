@@ -3,3 +3,4 @@ gunicorn
 numpy
 scikit-learn
 pickle-mixin
+flask-cors # Added for enabling Cross-Origin Resource Sharing
