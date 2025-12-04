@@ -1,7 +1,8 @@
-// Set the base URL for API calls. If running locally, this is essential.
-// If your server is on a different port (e.g., 8080) than your client (e.g., 5000), 
-// you MUST use the full URL here.
-const API_BASE_URL = window.location.protocol + '//' + window.location.hostname + ':8080';
+// Set the base URL for API calls. 
+// CRITICAL FIX: Since the Flask app serves both the HTML/JS AND the API, 
+// they are on the same origin. We use the current window's protocol and hostname 
+// without specifying a port (as Render uses standard HTTPS port 443).
+const API_BASE_URL = window.location.protocol + '//' + window.location.host;
 
 function getBathValue() {
     var uiBathrooms = document.getElementsByName("uiBathrooms");
@@ -45,7 +46,9 @@ function onClickedEstimatePrice() {
     }, function(data, status) {
         if (status === 'success' && data.estimated_price !== undefined) {
             console.log("Prediction successful:", data.estimated_price);
-            estPrice.innerHTML = "<h2>Estimated Price: " + data.estimated_price.toString() + " Lakh</h2>";
+            // Format price to two decimal places
+            const formattedPrice = data.estimated_price.toFixed(2);
+            estPrice.innerHTML = "<h2>Estimated Price: " + formattedPrice.toString() + " Lakh</h2>";
         } else {
             console.error("Prediction failed or returned unexpected data:", data);
             estPrice.innerHTML = "<h2>Prediction Failed. Check Server Logs.</h2>";
