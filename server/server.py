@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import util
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=None)  # We handle static manually
 
 # ---------------- API Routes ----------------
 @app.route('/get_location_names')
@@ -26,7 +26,6 @@ def predict_home_price():
     return response
 
 # ---------------- Serve Frontend ----------------
-# Absolute path to /client folder
 CLIENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'client'))
 
 @app.route('/')
@@ -35,13 +34,12 @@ def index():
 
 @app.route('/static/<path:path>')
 def serve_static(path):
-    """Serve JS/CSS/images under /static/ folder"""
     return send_from_directory(CLIENT_DIR, path)
 
-# Optional: handle unknown routes (SPA support)
+# Optional: SPA fallback
 @app.errorhandler(404)
 def not_found(e):
-    return "Not Found", 404
+    return send_from_directory(CLIENT_DIR, 'index.html')
 
 # ---------------- Main ----------------
 if __name__ == '__main__':
