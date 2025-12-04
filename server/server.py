@@ -2,16 +2,14 @@ from flask import Flask, request, jsonify, send_from_directory
 import util
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=None)  # Disable default /static handling
 
-# ---------------- API Routes ----------------
+# API routes
 @app.route('/get_location_names')
 def get_location_names():
     locations = util.get_location_names()
-    print("Returning locations:", locations)   # debug
-    response = jsonify({'locations': locations})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    print("Returning locations:", locations)  # debug
+    return jsonify({'locations': locations})
 
 @app.route('/predict_home_price', methods=['POST'])
 def predict_home_price():
@@ -19,25 +17,22 @@ def predict_home_price():
     location = request.form['location']
     bhk = int(request.form['bhk'])
     bath = int(request.form['bath'])
-
     estimated_price = util.get_estimated_price(location.lower(), total_sqft, bath, bhk)
-    response = jsonify({'estimated_price': estimated_price})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return jsonify({'estimated_price': estimated_price})
 
-# ---------------- Serve Frontend ----------------
+# Serve frontend files
 CLIENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'client'))
 
 @app.route('/')
 def index():
     return send_from_directory(CLIENT_DIR, 'index.html')
 
-@app.route('/static/<path:path>')
-def serve_static(path):
-    return send_from_directory(os.path.join(CLIENT_DIR, 'static'), path)
+@app.route('/<path:path>')
+def serve_file(path):
+    return send_from_directory(CLIENT_DIR, path)
 
-# ---------------- Main ----------------
-if __name__ == '__main__':
+# Main
+if __name__ == "__main__":
     util.load_saved_artifacts()
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
