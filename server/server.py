@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS # 1. Import CORS
+from flask_cors import CORS 
 import util
 import os
 
-# 1. You will need to install flask-cors: pip install flask-cors
-# Use a non-static folder setup, as you are managing static serving manually
 app = Flask(__name__, static_folder=None)
-CORS(app) # 2. Enable CORS for all routes (essential for frontend/backend communication)
+# CORS is already enabled, which is good practice even though the Flask app is serving static files
+# on the same domain.
+CORS(app) 
 
 # API routes
 @app.route('/get_location_names')
@@ -14,7 +14,7 @@ def get_location_names():
     # Locations are returned in lowercase from util.py, which is correct for internal use.
     locations = util.get_location_names()
     print("Returning locations:", locations) # debug
-    # 3. Use jsonify for the response
+    # Use jsonify for the response
     return jsonify({'locations': locations})
 
 @app.route('/predict_home_price', methods=['POST'])
@@ -30,10 +30,12 @@ def predict_home_price():
     except ValueError as e:
         return jsonify({'error': f'Invalid data type: {e}'}), 400
 
+    # Ensure location is converted to lowercase for model compatibility
     estimated_price = util.get_estimated_price(location.lower(), total_sqft, bath, bhk)
     return jsonify({'estimated_price': estimated_price})
 
 # Serve frontend files
+# This path setup assumes 'client' is one directory above the directory containing 'server.py'
 CLIENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'client'))
 
 @app.route('/')
@@ -49,7 +51,10 @@ def serve_file(path):
 
 # Main
 if __name__ == "__main__":
+    # Ensure the model artifacts are loaded before the server starts
     util.load_saved_artifacts()
-    # 4. Use a standard port like 8080 or 5000 for local development if not using a managed environment
-    port = int(os.environ.get('PORT', 8080)) # Changed default to 8080 for common use
+    
+    # CRITICAL RENDER FIX: Use the 'PORT' environment variable provided by Render 
+    # for production, defaulting to a common port (like 5000) for local testing.
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
