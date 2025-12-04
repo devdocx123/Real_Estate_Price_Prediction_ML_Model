@@ -28,7 +28,9 @@ def predict_home_price():
 
 # ---------------- Serve Frontend ----------------
 # Make sure 'client' folder is in the same directory as server.py
-CLIENT_DIR = os.path.join(os.path.dirname(__file__), 'client')
+CLIENT_DIR = os.path.join(os.path.dirname(__file__), '..', 'client')
+CLIENT_DIR = os.path.abspath(CLIENT_DIR)
+
 
 @app.route('/')
 def index():
@@ -49,3 +51,4 @@ if __name__ == '__main__':
     util.load_saved_artifacts()
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
