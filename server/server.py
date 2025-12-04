@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import util
 import os
 
-app = Flask(__name__, static_folder=None)  # We handle static manually
+app = Flask(__name__)
 
 # ---------------- API Routes ----------------
 @app.route('/get_location_names')
@@ -20,7 +20,7 @@ def predict_home_price():
     bhk = int(request.form['bhk'])
     bath = int(request.form['bath'])
 
-    estimated_price = util.get_estimated_price(location, total_sqft, bath, bhk)
+    estimated_price = util.get_estimated_price(location.lower(), total_sqft, bath, bhk)
     response = jsonify({'estimated_price': estimated_price})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
@@ -34,12 +34,7 @@ def index():
 
 @app.route('/static/<path:path>')
 def serve_static(path):
-    return send_from_directory(CLIENT_DIR, path)
-
-# Optional: SPA fallback
-@app.errorhandler(404)
-def not_found(e):
-    return send_from_directory(CLIENT_DIR, 'index.html')
+    return send_from_directory(os.path.join(CLIENT_DIR, 'static'), path)
 
 # ---------------- Main ----------------
 if __name__ == '__main__':
